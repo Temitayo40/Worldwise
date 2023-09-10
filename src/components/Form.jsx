@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
-
 import "react-datepicker/dist/react-datepicker.css";
 
-import styles from "./Form.module.css";
 import Button from "./Button";
-// import { useNavigate } from "react-router-dom";
 import BackButton from "./BackButton";
+
+import styles from "./Form.module.css";
 import { useUrlPosition } from "../hooks/useUrlPosition";
 import Message from "./Message";
 import Spinner from "./Spinner";
@@ -36,15 +35,16 @@ function Form() {
   const [date, setDate] = useState(new Date());
   const [notes, setNotes] = useState("");
   const [emoji, setEmoji] = useState("");
-  const [geoCodingError, setGeoCodingError] = useState("");
+  const [geocodingError, setGeocodingError] = useState("");
 
   useEffect(
     function () {
       if (!lat && !lng) return;
+
       async function fetchCityData() {
         try {
           setIsLoadingGeocoding(true);
-          setGeoCodingError("");
+          setGeocodingError("");
 
           const res = await fetch(
             `${BASE_URL}?latitude=${lat}&longitude=${lng}`
@@ -54,19 +54,18 @@ function Form() {
 
           if (!data.countryCode)
             throw new Error(
-              `That doesn't seem to be a city, Click somewhere else 😉`
+              "That doesn't seem to be a city. Click somewhere else 😉"
             );
 
           setCityName(data.city || data.locality || "");
           setCountry(data.countryName);
           setEmoji(convertToEmoji(data.countryCode));
         } catch (err) {
-          setGeoCodingError(err.message);
+          setGeocodingError(err.message);
         } finally {
           setIsLoadingGeocoding(false);
         }
       }
-
       fetchCityData();
     },
     [lat, lng]
@@ -91,13 +90,15 @@ function Form() {
   }
 
   if (isLoadingGeocoding) return <Spinner />;
+
   if (!lat && !lng)
     return <Message message="Start by clicking somewhere on the map" />;
-  if (geoCodingError) return <Message message={geoCodingError} />;
+
+  if (geocodingError) return <Message message={geocodingError} />;
 
   return (
     <form
-      className={`#{styles.form} ${isLoading ? styles.loading : ""}`}
+      className={`${styles.form} ${isLoading ? styles.loading : ""}`}
       onSubmit={handleSubmit}
     >
       <div className={styles.row}>
